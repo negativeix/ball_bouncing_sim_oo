@@ -4,6 +4,7 @@ class Paddle:
         self.height = height
         self.location = [0, 0]
         self.color = color
+        self.original_color = color
         self.my_turtle = my_turtle
         self.my_turtle.penup()
         self.my_turtle.setheading(0)
@@ -15,8 +16,8 @@ class Paddle:
 
     def draw(self):
         self.my_turtle.color(self.color)
-        self.my_turtle.goto(self.location[0], self.location[1] - self.height/2)
-        self.my_turtle.forward(self.width/2)
+        self.my_turtle.goto(self.location[0], self.location[1] - self.height / 2)
+        self.my_turtle.forward(self.width / 2)
         self.my_turtle.pendown()
         self.my_turtle.begin_fill()
         for _ in range(2):
