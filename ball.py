@@ -26,23 +26,18 @@ class Ball:
     def update_stage(self):
         """Update the speed and color based on the current stage"""
         if self.stage == 1:
-            self.color = (0, 255, 0)  # Green
+            self.color = (255, 255, 0)  # YELLOW
             self.vx = 1.5
             self.vy = 1.5
         elif self.stage == 2:
-            self.color = (255, 255, 0)  # YELLOW
+            self.color = (236, 83, 0)  # ORANGE
             self.vx = 2
             self.vy = 2
         elif self.stage == 3:
             self.color = (255, 0, 0)  # Red
-            self.vx = 2.5
-            self.vy = 2.5
+            self.vx = 4
+            self.vy = 4
 
-
-
-        # Set the ball's velocity based on the speed for the current stage
-        # self.vx = self.speed * random.uniform(-1.0, 1.0)
-        # self.vy = self.speed * random.uniform(-1.0, 1.0)
 
     def draw(self):
         """Draw the ball on the screen"""
@@ -161,43 +156,24 @@ class Ball:
             return math.inf
 
     def time_to_hit_paddle(self, paddle):
-        if (self.vy > 0) and ((self.y + self.size) > (paddle.location[1] - paddle.height / 2)):
+        if (self.vy > 0) and ((self.y + self.size) > (paddle.location[1] - paddle.height/2)):
             return math.inf
-        if (self.vy < 0) and ((self.y - self.size) < (paddle.location[1] + paddle.height / 2)):
+        if (self.vy < 0) and ((self.y - self.size) < (paddle.location[1] + paddle.height/2)):
             return math.inf
 
-        dt = (math.sqrt((paddle.location[1] - self.y) ** 2) - self.size - paddle.height / 2) / abs(self.vy)
-        paddle_left_edge = paddle.location[0] - paddle.width / 2
-        paddle_right_edge = paddle.location[0] + paddle.width / 2
-        if paddle_left_edge - self.size <= self.x + (self.vx * dt) <= paddle_right_edge + self.size:
+        dt = (math.sqrt((paddle.location[1] - self.y)**2) - self.size - paddle.height/2) / abs(self.vy)
+        paddle_left_edge = paddle.location[0] - paddle.width/2
+        paddle_right_edge = paddle.location[0] + paddle.width/2
+        if paddle_left_edge - self.size <= self.x + (self.vx*dt) <= paddle_right_edge + self.size:
             return dt
         else:
             return math.inf
 
-    def bounce_off_paddle(self, paddle):
-        # Edge of paddle
-        paddle_top = paddle.location[1] + paddle.height / 2
-        paddle_bottom = paddle.location[1] - paddle.height / 2
-        paddle_left = paddle.location[0] - paddle.width / 2
-        paddle_right = paddle.location[0] + paddle.width / 2
-
-        # Change paddle's color to a random color
-        paddle.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-
-        # Check bounce direction and update velocity accordingly
-        if self.y > paddle_top:  # Top of the paddle
-            self.vy = abs(self.vy)
-            self.y = paddle_top + self.size
-        elif self.y < paddle_bottom:  # Bottom of the paddle
-            self.vy = -abs(self.vy)
-            self.y = paddle_bottom - self.size
-        elif self.x > paddle_right:  # Right side of the paddle
-            self.vx = abs(self.vx)
-            self.x = paddle_right + self.size
-        elif self.x < paddle_left:  # Left side of the paddle
-            self.vx = -abs(self.vx)
-            self.x = paddle_left - self.size
-
+    def bounce_off_paddle(self,paddle):
+        self.vy = -self.vy
+        self.vx = -self.vx
+        print("################CHECK###############")
+        paddle.flash_red()
         self.count += 1
         if self.count >= 5:
             self.stage += 1

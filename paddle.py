@@ -16,14 +16,12 @@ class Paddle:
         self.my_turtle.goto(self.location[0], self.location[1])
 
     def draw(self):
-        margin = 2.5  # ความกว้างของขอบ
-
-        # วาดขอบ (สีขอบ)
-        border_color = (0,0,0)  # สีของขอบ
+        margin = 2.5
+        border_color = (0,0,0)
         self.my_turtle.color(border_color)
         self.my_turtle.penup()
         self.my_turtle.goto(self.location[0] - self.width / 2,
-                            self.location[1] - self.height / 2)  # มุมซ้ายล่าง
+                            self.location[1] - self.height / 2)
         self.my_turtle.pendown()
         self.my_turtle.begin_fill()
         for _ in range(2):
@@ -34,14 +32,13 @@ class Paddle:
         self.my_turtle.end_fill()
         self.my_turtle.penup()
 
-        # วาด paddle จริง (พื้นที่ภายใน)
         self.my_turtle.color(self.color)
         inner_width = self.width - 2 * margin
         inner_height = self.height - 2 * margin
         self.my_turtle.goto(
             self.location[0] - inner_width / 2,
             self.location[1] - inner_height / 2
-        )  # มุมซ้ายล่างของ paddle จริง
+        )
         self.my_turtle.pendown()
         self.my_turtle.begin_fill()
         for _ in range(2):
@@ -51,10 +48,17 @@ class Paddle:
             self.my_turtle.left(90)
         self.my_turtle.end_fill()
         self.my_turtle.penup()
-
-        # กลับไปที่ตำแหน่งศูนย์กลางของ paddle
         self.my_turtle.goto(self.location[0], self.location[1])
 
+    def flash_red(self, duration=1):
+        self.color = (240, 128, 128)
+        self.draw()
+        self.my_turtle.getscreen().ontimer(self.restore_white,
+                                           int(duration * 1000))
+
+    def restore_white(self):
+        self.color = (255, 255, 255)
+        self.draw()
     def clear(self):
         self.my_turtle.clear()
 

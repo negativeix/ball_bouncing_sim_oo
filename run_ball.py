@@ -1,11 +1,9 @@
-import copy
 import random
 import turtle
 import heapq
 import paddle
 import ball
 import my_event
-import math
 from movement import PaddleMovement
 
 class BouncingSimulator:
@@ -41,17 +39,20 @@ class BouncingSimulator:
 
         # Create the paddle
         tom = turtle.Turtle()
-        self.my_paddle = paddle.Paddle(30, 30, (128, 128, 128), tom)
+        self.my_paddle = paddle.Paddle(30, 30, (255, 255, 255), tom)
         self.my_paddle.set_location([0, 0])
 
         self.screen = turtle.Screen()
-
+        self.screen.bgcolor("grey")
         # Initializing game level and ball increment
         self.level = 1
         self.max_level = 5  # Set max level, after which no more balls will be added
         self.stage_ball_count = 1  # Starting with 1 ball
 
         self.paddle_movement = PaddleMovement(self)
+
+
+
     def add_new_ball(self):
         x = -self.canvas_width + (len(self.ball_list) + 1) * (
                 2 * self.canvas_width / (self.num_balls + 1))
@@ -152,23 +153,59 @@ class BouncingSimulator:
 
                 print(f"Added a new ball: Level {self.level}.")
 
+    def start_screen(self):
+        # สร้าง turtle สำหรับเขียนข้อความ
+        title_writer = turtle.Turtle(visible=False)
+        title_writer.penup()
+        title_writer.color("black")
+
+        # เขียนข้อความ DodgeBall ขนาดใหญ่
+        title_writer.goto(0, 50)
+        title_writer.write("DodgeBall", align="center",
+                           font=("Arial", 36, "bold"))
+
+        # เขียนข้อความ Press P to Play ขนาดกลาง
+        title_writer.goto(0, -50)
+        title_writer.write("Press 'P' to Play", align="center",
+                           font=("Arial", 24, "normal"))
+
+        # รอให้ผู้เล่นกดปุ่ม P เพื่อเริ่มเกม
+        def start_game():
+            title_writer.clear()  # ลบข้อความเริ่มต้น
+            self.is_running = True  # เริ่มเกม
+            self.run_game_loop()  # เข้าสู่เกมหลัก
+
+        self.screen.onkeypress(start_game, "p")
+        self.screen.onkeypress(start_game, "P") # กด P เพื่อเริ่มเกม
+        self.screen.listen()  # รอฟังการกดปุ่ม
+        self.screen.mainloop()  # แสดงหน้าจอรอ
+
     def run(self):
+        self.is_running = False  # สถานะเริ่มต้นว่าเกมยังไม่เริ่ม
+        self.start_screen()  # แสดงหน้าจอเริ่มต้น
+
+    def run_game_loop(self):
         # Initialize priority queue with collision events and redraw event
         for i in range(len(self.ball_list)):
             self.__predict(self.ball_list[i])
         heapq.heappush(self.pq, my_event.Event(0, None, None, None))
 
         # Bind key press and release events
-        self.screen.listen()
-        self.screen.onkeypress(self.paddle_movement.start_move_left, "Left")
-        self.screen.onkeypress(self.paddle_movement.start_move_right, "Right")
+        self.screen.onkeypress(self.paddle_movement.start_move_left,
+                               "Left")
+        self.screen.onkeypress(self.paddle_movement.start_move_right,
+                               "Right")
         self.screen.onkeypress(self.paddle_movement.start_move_up, "Up")
-        self.screen.onkeypress(self.paddle_movement.start_move_down, "Down")
+        self.screen.onkeypress(self.paddle_movement.start_move_down,
+                               "Down")
 
-        self.screen.onkeyrelease(self.paddle_movement.stop_move_left, "Left")
-        self.screen.onkeyrelease(self.paddle_movement.stop_move_right, "Right")
+        self.screen.onkeyrelease(self.paddle_movement.stop_move_left,
+                                 "Left")
+        self.screen.onkeyrelease(self.paddle_movement.stop_move_right,
+                                 "Right")
         self.screen.onkeyrelease(self.paddle_movement.stop_move_up, "Up")
-        self.screen.onkeyrelease(self.paddle_movement.stop_move_down, "Down")
+        self.screen.onkeyrelease(self.paddle_movement.stop_move_down,
+                                 "Down")
 
         self.screen.onkeypress(self.paddle_movement.blink_blade, "space")
 
@@ -202,7 +239,8 @@ class BouncingSimulator:
                     paddle_a is None):
                 # Ball hits horizontal wall
                 ball_b.bounce_off_horizontal_wall()
-            elif (ball_a is None) and (ball_b is None) and (paddle_a is None):
+            elif (ball_a is None) and (ball_b is None) and (
+                    paddle_a is None):
                 # Redraw event
                 self.__redraw()
             elif (ball_a is not None) and (ball_b is None) and (
@@ -219,7 +257,6 @@ class BouncingSimulator:
 
             # Regularly update paddle predictions
             self.__paddle_predict()
-
 
 # num_balls = int(input("Number of balls to simulate: "))
 num_balls = 1
