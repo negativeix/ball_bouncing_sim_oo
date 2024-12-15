@@ -6,9 +6,9 @@ import ball
 import my_event
 from movement import PaddleMovement
 
-class BouncingSimulator:
-    def __init__(self, num_balls):
-        self.num_balls = num_balls
+class DodgeBall:
+    def __init__(self):
+        self.num_balls = 1
         self.ball_list = []
         self.t = 0.0
         self.pq = []
@@ -50,6 +50,8 @@ class BouncingSimulator:
         self.stage_ball_count = 1  # Starting with 1 ball
 
         self.paddle_movement = PaddleMovement(self)
+
+        self.lives = 5  # Set initial lives to 5
 
 
 
@@ -104,12 +106,21 @@ class BouncingSimulator:
         turtle.color((0, 0, 0))
         turtle.write(f"Level: {self.level}", font=("Arial", 16, "bold"))
 
+
     def __redraw(self):
         turtle.clear()
         self.my_paddle.clear()
         self.__draw_border()
         self.__draw_level()
         self.my_paddle.draw()
+
+        # Draw lives remaining
+        turtle.penup()
+        turtle.goto(self.canvas_width - 100, self.canvas_height - 40)
+        turtle.pendown()
+        turtle.color((0, 0, 0))
+        turtle.write(f"Lives: {self.lives}", font=("Arial", 16, "bold"))
+
         for i in range(len(self.ball_list)):
             self.ball_list[i].draw()
         turtle.update()
@@ -154,37 +165,133 @@ class BouncingSimulator:
                 print(f"Added a new ball: Level {self.level}.")
 
     def start_screen(self):
-        # สร้าง turtle สำหรับเขียนข้อความ
+        # Create turtle for writing text
         title_writer = turtle.Turtle(visible=False)
         title_writer.penup()
         title_writer.color("black")
 
-        # เขียนข้อความ DodgeBall ขนาดใหญ่
+        # Write main title "DodgeBall"
         title_writer.goto(0, 50)
         title_writer.write("DodgeBall", align="center",
                            font=("Arial", 36, "bold"))
 
-        # เขียนข้อความ Press P to Play ขนาดกลาง
+        # Instructions to start the game
         title_writer.goto(0, -50)
         title_writer.write("Press 'P' to Play", align="center",
                            font=("Arial", 24, "normal"))
 
-        # รอให้ผู้เล่นกดปุ่ม P เพื่อเริ่มเกม
+        # Instructions for Spacebar Blink
+        title_writer.goto(0, -100)
+        title_writer.write("Press 'Spacebar' to Blink (When Available)",
+                           align="center", font=("Arial", 18, "normal"))
+
+############################################################################################
+        example_writer = turtle.Turtle()
+
+        # Draw the Normal Paddle (White)
+        white_paddle = paddle.Paddle(30, 30, (255, 255, 255),
+                                     example_writer)  # White color for normal paddle
+        white_paddle.set_location([-200, -180])
+        white_paddle.draw()
+        example_writer.goto(-200, -220)
+        example_writer.write("Normal", align="center",
+                             font=("Arial", 14, "normal"))
+
+
+        black_paddle = paddle.Paddle(30, 30, (0, 0, 0),
+                                     example_writer)  # Black color for blink cooldown
+        black_paddle.set_location([0, -180])
+        black_paddle.draw()
+        example_writer.goto(0, -220)
+        example_writer.write("Blink (Cooldown)", align="center",
+                             font=("Arial", 14, "normal"))
+
+        # Draw the Damage Paddle (Red)
+        red_paddle = paddle.Paddle(30, 30, (240, 128, 128),
+                                   example_writer)  # Red color for damage
+        red_paddle.set_location([200, -180])
+        red_paddle.draw()
+        example_writer.goto(200, -220)
+        example_writer.write("Damage (Lives Lost)", align="center",
+                             font=("Arial", 14, "normal"))
+        # Wait for the player to press P to start the game
         def start_game():
-            title_writer.clear()  # ลบข้อความเริ่มต้น
-            self.is_running = True  # เริ่มเกม
-            self.run_game_loop()  # เข้าสู่เกมหลัก
+            title_writer.clear()  # Clear the instructions
+            example_writer.clear()
+            red_paddle.clear()
+            white_paddle.clear()
+            black_paddle.clear()
+            self.is_running = True  # Start the game
+            self.run_game_loop()  # Enter the main game loop
 
         self.screen.onkeypress(start_game, "p")
-        self.screen.onkeypress(start_game, "P") # กด P เพื่อเริ่มเกม
+        self.screen.onkeypress(start_game, "P")  # Press 'P' to start
+        self.screen.listen()  # Listen for keypress
+        self.screen.mainloop()  # Display waiting screen
+
+
+
+    def show_game_over(self):
+        # ลบหน้าจอและซ่อน Paddle
+        turtle.clear()
+        self.my_paddle.clear()
+
+
+        # เขียนข้อความ Game Over
+        game_over_writer = turtle.Turtle(visible=False)
+        game_over_writer.penup()
+        game_over_writer.color("red")
+
+        # ข้อความ "Game Over"
+        game_over_writer.goto(0, 50)
+        game_over_writer.write("GAME OVER!!!", align="center",
+                               font=("Arial", 36, "bold"))
+
+        game_over_writer.color("black")
+        # ข้อความ "Press R to Restart or Q to Quit"
+        game_over_writer.goto(0, -50)
+        game_over_writer.write("Press 'R' to Restart or 'Q' to Quit",
+                               align="center", font=("Arial", 24, "normal"))
+
+        # การจัดการเมื่อกดปุ่ม R เพื่อเริ่มเกมใหม่
+        def restart_game():
+            game_over_writer.clear()
+            self.reset_game()
+
+        # การจัดการเมื่อกดปุ่ม Q เพื่อออกจากเกม
+        def quit_game():
+            turtle.bye()
+
+        # กำหนดปุ่มกดสำหรับ R และ Q
+        self.screen.onkeypress(restart_game, "r")
+        self.screen.onkeypress(restart_game, "R")
+        self.screen.onkeypress(quit_game, "q")
+        self.screen.onkeypress(quit_game, "Q")
+
         self.screen.listen()  # รอฟังการกดปุ่ม
-        self.screen.mainloop()  # แสดงหน้าจอรอ
+
+    def reset_game(self):
+        # รีเซ็ตค่าพื้นฐานของเกม
+        self.lives = 5
+        self.level = 1
+        self.t = 0.0
+        self.ball_list = []
+        self.pq = []
+
+        self.my_paddle.color=(255, 255, 255)
+        self.my_paddle.set_location([0, 0])
+
+
+        self.add_new_ball()
+
+        self.run_game_loop()
 
     def run(self):
-        self.is_running = False  # สถานะเริ่มต้นว่าเกมยังไม่เริ่ม
-        self.start_screen()  # แสดงหน้าจอเริ่มต้น
+        self.is_running = False
+        self.start_screen()
 
     def run_game_loop(self):
+        self.paddle_movement.stop_paddle_movement()
         # Initialize priority queue with collision events and redraw event
         for i in range(len(self.ball_list)):
             self.__predict(self.ball_list[i])
@@ -245,8 +352,19 @@ class BouncingSimulator:
                 self.__redraw()
             elif (ball_a is not None) and (ball_b is None) and (
                     paddle_a is not None):
-                # Ball hits paddle
-                ball_a.bounce_off_paddle(paddle_a)
+
+                    self.lives -= 1
+                    print(f"Lives left: {self.lives}")
+
+
+                    if self.lives <= 0:
+                        self.show_game_over()
+                        print("Game Over!")
+                        return  # End the game
+
+                #Ball hits paddle
+                    ball_a.bounce_off_paddle(paddle_a)
+
 
             # Check if the level should be increased
             self.check_level_up()
@@ -259,6 +377,6 @@ class BouncingSimulator:
             self.__paddle_predict()
 
 # num_balls = int(input("Number of balls to simulate: "))
-num_balls = 1
-my_simulator = BouncingSimulator(num_balls)
+
+my_simulator = DodgeBall()
 my_simulator.run()
