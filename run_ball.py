@@ -21,6 +21,7 @@ class DodgeBall:
         self.canvas_height = turtle.screensize()[1]
         print(self.canvas_width, self.canvas_height)
 
+        self.score = 0
         # Initial ball radius based on canvas size
         self.ball_radius = 0.05 * self.canvas_width
 
@@ -51,7 +52,7 @@ class DodgeBall:
 
         self.paddle_movement = PaddleMovement(self)
 
-        self.lives = 5  # Set initial lives to 5
+        self.lives = 500  # Set initial lives to 5
 
 
 
@@ -106,6 +107,14 @@ class DodgeBall:
         turtle.color((0, 0, 0))
         turtle.write(f"Level: {self.level}", font=("Arial", 16, "bold"))
 
+        turtle.penup()
+        turtle.goto(-self.canvas_width + 20,
+                    self.canvas_height - 70)  # Adjust the position for the score
+        turtle.pendown()
+        turtle.color((0, 0, 0))
+        turtle.write(f"Score: {int(self.score)}", font=("Arial", 16, "bold"))
+
+
 
     def __redraw(self):
         turtle.clear()
@@ -145,7 +154,7 @@ class DodgeBall:
                 all_stage_4 = False
                 break
 
-        if all_stage_4:
+        if all_stage_4 and self.level != self.max_level:
             # If all balls are at stage 4, reset all balls to stage 0 and add a new ball
             print("All balls reached stage 4. Resetting all balls to stage 0 and adding a new ball.")
             for ball in self.ball_list:
@@ -283,7 +292,7 @@ class DodgeBall:
         self.ball_list = []
         self.pq = []
 
-        self.my_paddle.color=(255, 255, 255)
+        self.my_paddle.color = (255, 255, 255)
         self.my_paddle.set_location([0, 0])
 
 
@@ -347,10 +356,12 @@ class DodgeBall:
                     paddle_a is None):
                 # Ball hits vertical wall
                 ball_a.bounce_off_vertical_wall()
+                self.score+=1
             elif (ball_a is None) and (ball_b is not None) and (
                     paddle_a is None):
                 # Ball hits horizontal wall
                 ball_b.bounce_off_horizontal_wall()
+                self.score += 1
             elif (ball_a is None) and (ball_b is None) and (
                     paddle_a is None):
                 # Redraw event
