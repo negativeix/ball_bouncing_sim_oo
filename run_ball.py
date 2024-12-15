@@ -181,9 +181,14 @@ class DodgeBall:
                            font=("Arial", 24, "normal"))
 
         # Instructions for Spacebar Blink
-        title_writer.goto(0, -100)
+        title_writer.goto(0, -140)
         title_writer.write("Press 'Spacebar' to Blink (When Available)",
-                           align="center", font=("Arial", 18, "normal"))
+                           align="center", font=("Arial", 16, "normal"))
+
+        # Instructions for movement using arrow keys
+        title_writer.goto(0, -100)
+        title_writer.write("Use Arrow Keys to Move: ← ↑ → ↓", align="center",
+                           font=("Arial", 18, "normal"))
 
 ############################################################################################
         example_writer = turtle.Turtle()

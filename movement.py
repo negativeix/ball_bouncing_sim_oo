@@ -7,6 +7,7 @@ class PaddleMovement:
         self.simulator.up_key_pressed = False
         self.simulator.down_key_pressed = False
 
+        self.movement_timer = None
         self.blink_cooldown = 3000  # 3 วินาที
         self.blink_ready = True  # สถานะการบลิงค์พร้อมใช้งาน
 
@@ -41,7 +42,11 @@ class PaddleMovement:
             if self.simulator.down_key_pressed:
                 self.move_down()
             self.simulator.screen.ontimer(self.move_continuous, 20)
-
+    def stop_paddle_movement(self):
+        """หยุดการเคลื่อนไหวของ Paddle."""
+        if self.movement_timer:
+            self.simulator.screen.ontimer(None, self.movement_timer)
+            self.movement_timer = None
     def start_move_left(self):
         self.simulator.left_key_pressed = True
 
@@ -100,5 +105,5 @@ class PaddleMovement:
         self.simulator.screen.ontimer(self.reset_blink, self.blink_cooldown)
 
     def reset_blink(self):
-        self.blink_ready = True  # บลิงค์พร้อมใช้งานอีกครั้ง
-        self.simulator.my_paddle.color = (128, 128, 128)  # เปลี่ยนสีกลับเป็นสีเทา (พร้อมใช้งาน)
+        self.blink_ready = True
+        self.simulator.my_paddle.color = (255, 255, 255)
