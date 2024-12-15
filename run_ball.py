@@ -52,7 +52,7 @@ class DodgeBall:
 
         self.paddle_movement = PaddleMovement(self)
 
-        self.lives = 500  # Set initial lives to 5
+        self.lives = 5  # Set initial lives to 5
 
 
 
@@ -243,36 +243,38 @@ class DodgeBall:
         self.screen.listen()  # Listen for keypress
         self.screen.mainloop()  # Display waiting screen
 
-
-
     def show_game_over(self):
-        # ลบหน้าจอและซ่อน Paddle
+        # Clear the screen and hide paddle
         turtle.clear()
         self.my_paddle.clear()
 
-
-        # เขียนข้อความ Game Over
+        # Write the "Game Over" message
         game_over_writer = turtle.Turtle(visible=False)
         game_over_writer.penup()
         game_over_writer.color("red")
 
-        # ข้อความ "Game Over"
+        # "Game Over" message
         game_over_writer.goto(0, 50)
         game_over_writer.write("GAME OVER!!!", align="center",
                                font=("Arial", 36, "bold"))
 
         game_over_writer.color("black")
-        # ข้อความ "Press R to Restart or Q to Quit"
-        game_over_writer.goto(0, -50)
+
+        # "Press R to Restart or Q to Quit" message
+        game_over_writer.goto(0, -100)
         game_over_writer.write("Press 'R' to Restart or 'Q' to Quit",
                                align="center", font=("Arial", 24, "normal"))
 
-        # การจัดการเมื่อกดปุ่ม R เพื่อเริ่มเกมใหม่
+        # Display the score (survival time)
+        game_over_writer.goto(0, -50)
+        game_over_writer.write(f"Score: {self.score} points", align="center",
+                               font=("Arial", 24, "normal"))
+
+        # Handling restart or quit actions
         def restart_game():
             game_over_writer.clear()
             self.reset_game()
 
-        # การจัดการเมื่อกดปุ่ม Q เพื่อออกจากเกม
         def quit_game():
             turtle.bye()
 
