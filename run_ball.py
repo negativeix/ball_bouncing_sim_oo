@@ -24,23 +24,24 @@ class BouncingSimulator:
         print(self.canvas_width, self.canvas_height)
 
         # Initial ball radius based on canvas size
-        ball_radius = 0.05 * self.canvas_width
+        self.ball_radius = 0.05 * self.canvas_width
 
         # Create the initial balls
-        for i in range(self.num_balls):
-            x = -self.canvas_width + (i + 1) * (
-                        2 * self.canvas_width / (self.num_balls + 1))
-            y = self.canvas_height
-            vx = 10 * random.uniform(-1.0, 1.0)
-            vy = 10 * random.uniform(-1.0, 1.0)
-            ball_color = (random.randint(0, 255), random.randint(0, 255),
-                          random.randint(0, 255))
-            self.ball_list.append(
-                ball.Ball(ball_radius, x, y, vx, vy, ball_color, i))
+
+        x = -self.canvas_width + (len(self.ball_list) + 1) * (
+                    2 * self.canvas_width / (self.num_balls + 1))
+        y = self.canvas_height
+        vx = 10 * random.uniform(-1.0, 1.0)
+        vy = 10 * random.uniform(-1.0, 1.0)
+        ball_color = (random.randint(0, 255), random.randint(0, 255),
+                      random.randint(0, 255))
+        id = len(self.ball_list)
+        self.ball_list.append(
+            ball.Ball(self.ball_radius, x, y, vx, vy, ball_color, id))
 
         # Create the paddle
         tom = turtle.Turtle()
-        self.my_paddle = paddle.Paddle(30, 30, (0, 0, 0), tom)
+        self.my_paddle = paddle.Paddle(30, 30, (128, 128, 128), tom)
         self.my_paddle.set_location([0, 0])
 
         self.screen = turtle.Screen()
@@ -55,6 +56,22 @@ class BouncingSimulator:
         self.right_key_pressed = False
         self.up_key_pressed = False
         self.down_key_pressed = False
+
+        self.blink_cooldown = 3000  # 3 วินาที
+        self.blink_ready = True  # สถานะการบลิงค์พร้อมใช้งาน
+
+    def add_new_ball(self):
+        x = -self.canvas_width + (len(self.ball_list) + 1) * (
+                2 * self.canvas_width / (self.num_balls + 1))
+        y = self.canvas_height
+        vx = 10 * random.uniform(-1.0, 1.0)
+        vy = 10 * random.uniform(-1.0, 1.0)
+        ball_color = (random.randint(0, 255), random.randint(0, 255),
+                      random.randint(0, 255))
+        id = len(self.ball_list)
+
+        self.ball_list.append(
+            ball.Ball(self.ball_radius, x, y, vx, vy, ball_color, id))
 
     # updates priority queue with all new events for a_ball
     def __predict(self, a_ball):
@@ -86,11 +103,19 @@ class BouncingSimulator:
             turtle.left(90)
             turtle.forward(2 * self.canvas_height)
             turtle.left(90)
+    def __draw_level(self):
+        # Display the level on the screen
+        turtle.penup()
+        turtle.goto(-self.canvas_width + 20, self.canvas_height - 40)
+        turtle.pendown()
+        turtle.color((0, 0, 0))
+        turtle.write(f"Level: {self.level}", font=("Arial", 16, "bold"))
 
     def __redraw(self):
         turtle.clear()
         self.my_paddle.clear()
         self.__draw_border()
+        self.__draw_level()
         self.my_paddle.draw()
         for i in range(len(self.ball_list)):
             self.ball_list[i].draw()
@@ -130,19 +155,10 @@ class BouncingSimulator:
 
 
 
-                # Copy properties from the first ball
-                first_ball = self.ball_list[0]
+                print('here')
+                self.add_new_ball()
+                self.__predict(self.ball_list[-1])
 
-                # Create new ball with the same properties as the first ball
-                new_ball = copy.deepcopy(first_ball)
-                new_ball.id = str(len(self.ball_list))
-                # Add the new ball to the list
-                self.ball_list.append(new_ball)
-
-                # Predict the events for the new ball
-                self.__predict(new_ball)
-
-                # Reset stage_ball_count
                 self.stage_ball_count = 1  # Start with 1 new ball
 
                 print(f"Added a new ball: Level {self.level}.")
@@ -212,6 +228,42 @@ class BouncingSimulator:
     def stop_move_down(self):
         self.down_key_pressed = False
 
+    def blink_blade(self):
+        if not self.blink_ready:
+            return  # ถ้ายังไม่พร้อมบลิงค์ ให้หยุดทำงาน
+
+        self.blink_ready = False  # เปลี่ยนสถานะเป็น "ไม่พร้อม"
+        self.my_paddle.color=(0,0,0) # เปลี่ยนสีเป็นสีดำ (แสดงว่ายังไม่พร้อม)
+
+        blink_distance = 100
+        new_x = self.my_paddle.location[0]
+        new_y = self.my_paddle.location[1]
+
+        # คำนวณตำแหน่งใหม่
+        if self.left_key_pressed:
+            new_x -= blink_distance
+        if self.right_key_pressed:
+            new_x += blink_distance
+        if self.up_key_pressed:
+            new_y += blink_distance
+        if self.down_key_pressed:
+            new_y -= blink_distance
+
+        # ตรวจสอบขอบเขต
+        new_x = max(-self.canvas_width + self.my_paddle.width / 2,
+                    min(self.canvas_width - self.my_paddle.width / 2, new_x))
+        new_y = max(-self.canvas_height + self.my_paddle.height / 2,
+                    min(self.canvas_height - self.my_paddle.height / 2, new_y))
+
+        # อัปเดตตำแหน่งใหม่
+        self.my_paddle.set_location([new_x, new_y])
+
+        # ตั้งเวลาให้กลับมาพร้อมใช้งานหลังคูลดาวน์เสร็จ
+        self.screen.ontimer(self.reset_blink, self.blink_cooldown)
+
+    def reset_blink(self):
+        self.blink_ready = True  # บลิงค์พร้อมใช้งานอีกครั้ง
+        self.my_paddle.color = (128,128,128)  # เปลี่ยนสีกลับเป็นสีเทา (พร้อมใช้งาน)
     def run(self):
         # Initialize priority queue with collision events and redraw event
         for i in range(len(self.ball_list)):
@@ -229,6 +281,8 @@ class BouncingSimulator:
         self.screen.onkeyrelease(self.stop_move_right, "Right")
         self.screen.onkeyrelease(self.stop_move_up, "Up")
         self.screen.onkeyrelease(self.stop_move_down, "Down")
+
+        self.screen.onkeypress(self.blink_blade, "space")
 
         # Start the continuous paddle movement loop
         self.move_continuous()
