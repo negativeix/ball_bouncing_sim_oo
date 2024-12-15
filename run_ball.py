@@ -6,7 +6,7 @@ import paddle
 import ball
 import my_event
 import math
-
+from movement import PaddleMovement
 
 class BouncingSimulator:
     def __init__(self, num_balls):
@@ -51,15 +51,7 @@ class BouncingSimulator:
         self.max_level = 5  # Set max level, after which no more balls will be added
         self.stage_ball_count = 1  # Starting with 1 ball
 
-        self.is_running = True
-        self.left_key_pressed = False
-        self.right_key_pressed = False
-        self.up_key_pressed = False
-        self.down_key_pressed = False
-
-        self.blink_cooldown = 3000  # 3 วินาที
-        self.blink_ready = True  # สถานะการบลิงค์พร้อมใช้งาน
-
+        self.paddle_movement = PaddleMovement(self)
     def add_new_ball(self):
         x = -self.canvas_width + (len(self.ball_list) + 1) * (
                 2 * self.canvas_width / (self.num_balls + 1))
@@ -152,9 +144,6 @@ class BouncingSimulator:
                 self.stage_ball_count += 1
                 print(
                     f"Level {self.level}: Checking if balls reach stage 4 to add a new ball.")
-
-
-
                 print('here')
                 self.add_new_ball()
                 self.__predict(self.ball_list[-1])
@@ -163,107 +152,6 @@ class BouncingSimulator:
 
                 print(f"Added a new ball: Level {self.level}.")
 
-
-    def move_left(self):
-        # ตรวจสอบว่า paddle ไม่ไปเกินขอบซ้าย
-        if (self.my_paddle.location[
-                0] - self.my_paddle.width / 2 - 10) > -self.canvas_width:
-            self.my_paddle.set_location(
-                [self.my_paddle.location[0] - 10, self.my_paddle.location[1]])
-
-    def move_right(self):
-        # ตรวจสอบว่า paddle ไม่ไปเกินขอบขวา
-        if (self.my_paddle.location[
-                0] + self.my_paddle.width / 2 + 10) < self.canvas_width:
-            self.my_paddle.set_location(
-                [self.my_paddle.location[0] + 10, self.my_paddle.location[1]])
-
-    def move_up(self):
-        # ตรวจสอบว่า paddle ไม่ไปเกินขอบบน
-        if (self.my_paddle.location[
-                1] + self.my_paddle.height / 2 + 10) < self.canvas_height:
-            self.my_paddle.set_location(
-                [self.my_paddle.location[0], self.my_paddle.location[1] + 10])
-
-    def move_down(self):
-        # ตรวจสอบว่า paddle ไม่ไปเกินขอบล่าง
-        if (self.my_paddle.location[
-                1] - self.my_paddle.height / 2 - 10) > -self.canvas_height:
-            self.my_paddle.set_location(
-                [self.my_paddle.location[0], self.my_paddle.location[1] - 10])
-
-    def move_continuous(self):
-        if self.is_running:
-            if self.left_key_pressed:
-                self.move_left()
-            if self.right_key_pressed:
-                self.move_right()
-            if self.up_key_pressed:
-                self.move_up()
-            if self.down_key_pressed:
-                self.move_down()
-            self.screen.ontimer(self.move_continuous, 20)
-
-    def start_move_left(self):
-        self.left_key_pressed = True
-
-    def start_move_right(self):
-        self.right_key_pressed = True
-
-    def start_move_up(self):
-        self.up_key_pressed = True
-
-    def start_move_down(self):
-        self.down_key_pressed = True
-
-    def stop_move_left(self):
-        self.left_key_pressed = False
-
-    def stop_move_right(self):
-        self.right_key_pressed = False
-
-    def stop_move_up(self):
-        self.up_key_pressed = False
-
-    def stop_move_down(self):
-        self.down_key_pressed = False
-
-    def blink_blade(self):
-        if not self.blink_ready:
-            return  # ถ้ายังไม่พร้อมบลิงค์ ให้หยุดทำงาน
-
-        self.blink_ready = False  # เปลี่ยนสถานะเป็น "ไม่พร้อม"
-        self.my_paddle.color=(0,0,0) # เปลี่ยนสีเป็นสีดำ (แสดงว่ายังไม่พร้อม)
-
-        blink_distance = 100
-        new_x = self.my_paddle.location[0]
-        new_y = self.my_paddle.location[1]
-
-        # คำนวณตำแหน่งใหม่
-        if self.left_key_pressed:
-            new_x -= blink_distance
-        if self.right_key_pressed:
-            new_x += blink_distance
-        if self.up_key_pressed:
-            new_y += blink_distance
-        if self.down_key_pressed:
-            new_y -= blink_distance
-
-        # ตรวจสอบขอบเขต
-        new_x = max(-self.canvas_width + self.my_paddle.width / 2,
-                    min(self.canvas_width - self.my_paddle.width / 2, new_x))
-        new_y = max(-self.canvas_height + self.my_paddle.height / 2,
-                    min(self.canvas_height - self.my_paddle.height / 2, new_y))
-
-        # อัปเดตตำแหน่งใหม่
-        self.my_paddle.set_location([new_x, new_y])
-
-        # ตั้งเวลาให้กลับมาพร้อมใช้งานหลังคูลดาวน์เสร็จ
-        self.screen.ontimer(self.reset_blink, self.blink_cooldown)
-
-    def reset_blink(self):
-        self.blink_ready = True  # บลิงค์พร้อมใช้งานอีกครั้ง
-        self.my_paddle.color = (128,128,128)  # เปลี่ยนสีกลับเป็นสีเทา (พร้อมใช้งาน)
     def run(self):
         # Initialize priority queue with collision events and redraw event
         for i in range(len(self.ball_list)):
@@ -272,20 +160,20 @@ class BouncingSimulator:
 
         # Bind key press and release events
         self.screen.listen()
-        self.screen.onkeypress(self.start_move_left, "Left")
-        self.screen.onkeypress(self.start_move_right, "Right")
-        self.screen.onkeypress(self.start_move_up, "Up")
-        self.screen.onkeypress(self.start_move_down, "Down")
+        self.screen.onkeypress(self.paddle_movement.start_move_left, "Left")
+        self.screen.onkeypress(self.paddle_movement.start_move_right, "Right")
+        self.screen.onkeypress(self.paddle_movement.start_move_up, "Up")
+        self.screen.onkeypress(self.paddle_movement.start_move_down, "Down")
 
-        self.screen.onkeyrelease(self.stop_move_left, "Left")
-        self.screen.onkeyrelease(self.stop_move_right, "Right")
-        self.screen.onkeyrelease(self.stop_move_up, "Up")
-        self.screen.onkeyrelease(self.stop_move_down, "Down")
+        self.screen.onkeyrelease(self.paddle_movement.stop_move_left, "Left")
+        self.screen.onkeyrelease(self.paddle_movement.stop_move_right, "Right")
+        self.screen.onkeyrelease(self.paddle_movement.stop_move_up, "Up")
+        self.screen.onkeyrelease(self.paddle_movement.stop_move_down, "Down")
 
-        self.screen.onkeypress(self.blink_blade, "space")
+        self.screen.onkeypress(self.paddle_movement.blink_blade, "space")
 
         # Start the continuous paddle movement loop
-        self.move_continuous()
+        self.paddle_movement.move_continuous()
 
         while True:
             e = heapq.heappop(self.pq)
