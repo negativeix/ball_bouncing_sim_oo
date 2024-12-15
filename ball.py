@@ -16,10 +16,6 @@ class Ball:
         self.canvas_width = turtle.screensize()[0]
         self.canvas_height = turtle.screensize()[1]
         self.stage = 1  # Start at stage 1
-
-        # Maximum allowed speed (cap speed)
-        self.max_speed = 10
-
         # Initialize color and speed based on initial stage
         self.update_stage()
 
@@ -33,10 +29,10 @@ class Ball:
             self.color = (236, 83, 0)  # ORANGE
             self.vx = 2
             self.vy = 2
-        elif self.stage == 3:
+        elif self.stage >= 3:
             self.color = (255, 0, 0)  # Red
-            self.vx = 4
-            self.vy = 4
+            self.vx = 2.75
+            self.vy = 2.75
 
 
     def draw(self):
