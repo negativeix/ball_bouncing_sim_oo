@@ -33,6 +33,9 @@ The player's color changes to indicate their current state:
 | Black      | Waiting for blink cooldown    |  
 | Red        | Player has taken damage       |  
 
+demo Video :
+https://youtu.be/DMuCgaxGTJM?si=LvITecFhKdY7CdRb
+
 ## Project design and implementation
 UML diagram
 link below:
@@ -104,4 +107,4 @@ https://lucid.app/lucidchart/8026c604-59e6-44bb-ba54-900068d5b19c/edit?viewport_
 - After pressing Restart, the default speed of the paddle is higher than it should be.
 
 ## Rating:
-I would rate my project sophistication level at 90
+I would rate my project sophistication level at 90/100 
