@@ -6,6 +6,7 @@ import ball
 import my_event
 from movement import PaddleMovement
 
+
 class DodgeBall:
     def __init__(self):
         self.num_balls = 1
@@ -34,9 +35,9 @@ class DodgeBall:
         vy = 10 * random.uniform(-1.0, 1.0)
         ball_color = (random.randint(0, 255), random.randint(0, 255),
                       random.randint(0, 255))
-        id = len(self.ball_list)
+        temp_id = len(self.ball_list)
         self.ball_list.append(
-            ball.Ball(self.ball_radius, x, y, vx, vy, ball_color, id))
+            ball.Ball(self.ball_radius, x, y, vx, vy, ball_color, temp_id))
 
         # Create the paddle
         tom = turtle.Turtle()
@@ -47,14 +48,13 @@ class DodgeBall:
         self.screen.bgcolor("grey")
         # Initializing game level and ball increment
         self.level = 1
-        self.max_level = 5  # Set max level, after which no more balls will be added
+        self.max_level = 5
         self.stage_ball_count = 1  # Starting with 1 ball
 
         self.paddle_movement = PaddleMovement(self)
 
         self.lives = 5  # Set initial lives to 5
-
-
+        self.is_running = False
 
     def add_new_ball(self):
         x = -self.canvas_width + (len(self.ball_list) + 1) * (
@@ -64,10 +64,10 @@ class DodgeBall:
         vy = 10 * random.uniform(-1.0, 1.0)
         ball_color = (random.randint(0, 255), random.randint(0, 255),
                       random.randint(0, 255))
-        id = len(self.ball_list)
+        temp_id = len(self.ball_list)
 
         self.ball_list.append(
-            ball.Ball(self.ball_radius, x, y, vx, vy, ball_color, id))
+            ball.Ball(self.ball_radius, x, y, vx, vy, ball_color, temp_id))
 
     # updates priority queue with all new events for a_ball
     def __predict(self, a_ball):
@@ -81,12 +81,12 @@ class DodgeBall:
                                                    self.ball_list[i], None))
 
         # particle-wall collisions
-        dtX = a_ball.time_to_hit_vertical_wall()
-        dtY = a_ball.time_to_hit_horizontal_wall()
+        dtx = a_ball.time_to_hit_vertical_wall()
+        dty = a_ball.time_to_hit_horizontal_wall()
         heapq.heappush(self.pq,
-                       my_event.Event(self.t + dtX, a_ball, None, None))
+                       my_event.Event(self.t + dtx, a_ball, None, None))
         heapq.heappush(self.pq,
-                       my_event.Event(self.t + dtY, None, a_ball, None))
+                       my_event.Event(self.t + dty, None, a_ball, None))
 
     def __draw_border(self):
         turtle.penup()
@@ -99,6 +99,7 @@ class DodgeBall:
             turtle.left(90)
             turtle.forward(2 * self.canvas_height)
             turtle.left(90)
+
     def __draw_level(self):
         # Display the level on the screen
         turtle.penup()
@@ -109,12 +110,10 @@ class DodgeBall:
 
         turtle.penup()
         turtle.goto(-self.canvas_width + 20,
-                    self.canvas_height - 70)  # Adjust the position for the score
+                    self.canvas_height - 70)
         turtle.pendown()
         turtle.color((0, 0, 0))
         turtle.write(f"Score: {int(self.score)}", font=("Arial", 16, "bold"))
-
-
 
     def __redraw(self):
         turtle.clear()
@@ -139,10 +138,10 @@ class DodgeBall:
 
     def __paddle_predict(self):
         for ball in self.ball_list:
-            dtP = ball.time_to_hit_paddle(self.my_paddle)
-            if dtP != float('inf'):
+            dtp = ball.time_to_hit_paddle(self.my_paddle)
+            if dtp != float('inf'):
                 heapq.heappush(self.pq,
-                               my_event.Event(self.t + dtP, ball, None,
+                               my_event.Event(self.t + dtp, ball, None,
                                               self.my_paddle))
 
     # Update level and add more balls if necessary
@@ -155,16 +154,17 @@ class DodgeBall:
                 break
 
         if all_stage_4 and self.level != self.max_level:
-            # If all balls are at stage 4, reset all balls to stage 0 and add a new ball
-            print("All balls reached stage 4. Resetting all balls to stage 0 and adding a new ball.")
+            print("All balls reached stage 4. Resetting all balls to stage 0 \
+            and adding a new ball.")
             for ball in self.ball_list:
                 ball.stage = 0  # Reset stage for all balls
 
-            if self.level < self.max_level:  #check level up
+            if self.level < self.max_level:
                 self.level += 1
                 self.stage_ball_count += 1
                 print(
-                    f"Level {self.level}: Checking if balls reach stage 4 to add a new ball.")
+                    f"Level {self.level}: Checking if balls reach \
+                    stage 4 to add a new ball.")
                 print('here')
                 self.add_new_ball()
                 self.__predict(self.ball_list[-1])
@@ -199,21 +199,19 @@ class DodgeBall:
         title_writer.write("Use Arrow Keys to Move: ← ↑ → ↓", align="center",
                            font=("Arial", 18, "normal"))
 
-############################################################################################
         example_writer = turtle.Turtle()
 
         # Draw the Normal Paddle (White)
         white_paddle = paddle.Paddle(30, 30, (255, 255, 255),
-                                     example_writer)  # White color for normal paddle
+                                     example_writer)
         white_paddle.set_location([-200, -180])
         white_paddle.draw()
         example_writer.goto(-200, -220)
         example_writer.write("Normal", align="center",
                              font=("Arial", 14, "normal"))
 
-
         black_paddle = paddle.Paddle(30, 30, (0, 0, 0),
-                                     example_writer)  # Black color for blink cooldown
+                                     example_writer)
         black_paddle.set_location([0, -180])
         black_paddle.draw()
         example_writer.goto(0, -220)
@@ -228,7 +226,7 @@ class DodgeBall:
         example_writer.goto(200, -220)
         example_writer.write("Damage (Lives Lost)", align="center",
                              font=("Arial", 14, "normal"))
-        # Wait for the player to press P to start the game
+
         def start_game():
             title_writer.clear()  # Clear the instructions
             example_writer.clear()
@@ -290,13 +288,13 @@ class DodgeBall:
         # รีเซ็ตค่าพื้นฐานของเกม
         self.lives = 5
         self.level = 1
+        self.score = 0
         self.t = 0.0
         self.ball_list = []
         self.pq = []
 
         self.my_paddle.color = (255, 255, 255)
         self.my_paddle.set_location([0, 0])
-
 
         self.add_new_ball()
 
@@ -358,7 +356,7 @@ class DodgeBall:
                     paddle_a is None):
                 # Ball hits vertical wall
                 ball_a.bounce_off_vertical_wall()
-                self.score+=1
+                self.score += 1
             elif (ball_a is None) and (ball_b is not None) and (
                     paddle_a is None):
                 # Ball hits horizontal wall
@@ -371,20 +369,16 @@ class DodgeBall:
             elif (ball_a is not None) and (ball_b is None) and (
                     paddle_a is not None):
 
-                    self.lives -= 1
-                    print(f"Lives left: {self.lives}")
+                self.lives -= 1
+                print(f"Lives left: {self.lives}")
 
+                if self.lives <= 0:
+                    self.show_game_over()
+                    print("Game Over!")
+                    return
 
-                    if self.lives <= 0:
-                        self.show_game_over()
-                        print("Game Over!")
-                        return  # End the game
+                ball_a.bounce_off_paddle(paddle_a)
 
-                #Ball hits paddle
-                    ball_a.bounce_off_paddle(paddle_a)
-
-
-            # Check if the level should be increased
             self.check_level_up()
 
             # Recalculate future events
@@ -394,7 +388,6 @@ class DodgeBall:
             # Regularly update paddle predictions
             self.__paddle_predict()
 
-# num_balls = int(input("Number of balls to simulate: "))
 
 my_simulator = DodgeBall()
 my_simulator.run()

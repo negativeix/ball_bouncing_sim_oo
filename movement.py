@@ -8,8 +8,8 @@ class PaddleMovement:
         self.simulator.down_key_pressed = False
 
         self.movement_timer = None
-        self.blink_cooldown = 3000  # 3 วินาที
-        self.blink_ready = True  # สถานะการบลิงค์พร้อมใช้งาน
+        self.blink_cooldown = 3000  # 3 seconds
+        self.blink_ready = True  # Blink ready status
 
     def move_left(self):
         if (self.simulator.my_paddle.location[0] - self.simulator.my_paddle.width / 2 - 10) > -self.simulator.canvas_width:
@@ -42,11 +42,13 @@ class PaddleMovement:
             if self.simulator.down_key_pressed:
                 self.move_down()
             self.simulator.screen.ontimer(self.move_continuous, 20)
+
     def stop_paddle_movement(self):
-        """หยุดการเคลื่อนไหวของ Paddle."""
+        """Stop paddle movement."""
         if self.movement_timer:
             self.simulator.screen.ontimer(None, self.movement_timer)
             self.movement_timer = None
+
     def start_move_left(self):
         self.simulator.left_key_pressed = True
 
@@ -73,16 +75,16 @@ class PaddleMovement:
 
     def blink_blade(self):
         if not self.blink_ready:
-            return  # ถ้ายังไม่พร้อมบลิงค์ ให้หยุดทำงาน
+            return  # If not ready to blink, stop
 
-        self.blink_ready = False  # เปลี่ยนสถานะเป็น "ไม่พร้อม"
-        self.simulator.my_paddle.color = (0, 0, 0)  # เปลี่ยนสีเป็นสีดำ (แสดงว่ายังไม่พร้อม)
+        self.blink_ready = False  # Change status to "not ready"
+        self.simulator.my_paddle.color = (0, 0, 0)  # Change color to black (indicating not ready)
 
         blink_distance = 100
         new_x = self.simulator.my_paddle.location[0]
         new_y = self.simulator.my_paddle.location[1]
 
-        # คำนวณตำแหน่งใหม่
+        # Calculate new position
         if self.simulator.left_key_pressed:
             new_x -= blink_distance
         if self.simulator.right_key_pressed:
@@ -92,16 +94,16 @@ class PaddleMovement:
         if self.simulator.down_key_pressed:
             new_y -= blink_distance
 
-        # ตรวจสอบขอบเขต
+        # Check boundaries
         new_x = max(-self.simulator.canvas_width + self.simulator.my_paddle.width / 2,
                     min(self.simulator.canvas_width - self.simulator.my_paddle.width / 2, new_x))
         new_y = max(-self.simulator.canvas_height + self.simulator.my_paddle.height / 2,
                     min(self.simulator.canvas_height - self.simulator.my_paddle.height / 2, new_y))
 
-        # อัปเดตตำแหน่งใหม่
+        # Update new position
         self.simulator.my_paddle.set_location([new_x, new_y])
 
-        # ตั้งเวลาให้กลับมาพร้อมใช้งานหลังคูลดาวน์เสร็จ
+        # Set timer to make it ready again after cooldown
         self.simulator.screen.ontimer(self.reset_blink, self.blink_cooldown)
 
     def reset_blink(self):

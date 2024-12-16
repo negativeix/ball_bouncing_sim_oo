@@ -2,6 +2,7 @@ import random
 import math
 import turtle
 
+
 class Ball:
     def __init__(self, size, x, y, vx, vy, color, id):
         self.size = size
@@ -34,7 +35,6 @@ class Ball:
             self.vx = 2.75
             self.vy = 2.75
 
-
     def draw(self):
         """Draw the ball on the screen"""
         turtle.penup()
@@ -50,14 +50,16 @@ class Ball:
         """Bounce off a vertical wall and increment bounce count"""
         self.vx = -self.vx
         self.count += 1
-        self.size =random.uniform(0.01,0.06) * self.canvas_width
+        self.size = random.uniform(0.01, 0.06) * self.canvas_width
         if self.count >= 5:
             self.stage += 1
             self.count = 0  # Reset bounce count after advancing stage
             self.update_stage()  # Update color and speed based on new stage
 
         print(
-            f"Ball {self.id} bounced off vertical wall. Current stage: {self.stage}, Current count: {self.count}")
+            f"Ball {self.id} bounced off vertical wall. \
+            Current stage: {self.stage}, Current count: {self.count}")
+
     def bounce_off_horizontal_wall(self):
         """Bounce off a horizontal wall and increment bounce count"""
         self.vy = -self.vy
@@ -67,7 +69,8 @@ class Ball:
             self.count = 0  # Reset bounce count after advancing stage
             self.update_stage()  # Update color and speed based on new stage
         print(
-            f"Ball {self.id} bounced off horizontal wall. Current stage: {self.stage}, Current count: {self.count}")
+            f"Ball {self.id} bounced off horizontal wall.\
+             Current stage: {self.stage}, Current count: {self.count}")
 
     def bounce_off(self, that):
         """Bounce off another ball and increment bounce count"""
@@ -76,10 +79,11 @@ class Ball:
         dvx = that.vx - self.vx
         dvy = that.vy - self.vy
         dvdr = dx * dvx + dy * dvy  # dv dot dr
-        dist = self.size + that.size   # Distance between particle centers at collision
+        dist = self.size + that.size
 
         # Magnitude of normal force
-        magnitude = 2 * self.mass * that.mass * dvdr / ((self.mass + that.mass) * dist)
+        magnitude = (2 * self.mass * that.mass * dvdr /
+                     ((self.mass + that.mass) * dist))
 
         # Normal force, and in x and y directions
         fx = magnitude * dx / dist
@@ -152,20 +156,24 @@ class Ball:
             return math.inf
 
     def time_to_hit_paddle(self, paddle):
-        if (self.vy > 0) and ((self.y + self.size) > (paddle.location[1] - paddle.height/2)):
+        if (self.vy > 0) and ((self.y + self.size) >
+                              (paddle.location[1] - paddle.height/2)):
             return math.inf
-        if (self.vy < 0) and ((self.y - self.size) < (paddle.location[1] + paddle.height/2)):
+        if (self.vy < 0) and ((self.y - self.size) <
+                              (paddle.location[1] + paddle.height/2)):
             return math.inf
 
-        dt = (math.sqrt((paddle.location[1] - self.y)**2) - self.size - paddle.height/2) / abs(self.vy)
+        dt = (math.sqrt((paddle.location[1] - self.y)**2)
+              - self.size - paddle.height/2) / abs(self.vy)
         paddle_left_edge = paddle.location[0] - paddle.width/2
         paddle_right_edge = paddle.location[0] + paddle.width/2
-        if paddle_left_edge - self.size <= self.x + (self.vx*dt) <= paddle_right_edge + self.size:
+        if (paddle_left_edge - self.size <= self.x + (self.vx*dt) <=
+                paddle_right_edge + self.size):
             return dt
         else:
             return math.inf
 
-    def bounce_off_paddle(self,paddle):
+    def bounce_off_paddle(self, paddle):
         self.vy = -self.vy
         self.vx = -self.vx
         print("################CHECK###############")
@@ -177,5 +185,6 @@ class Ball:
             self.update_stage()  # Update color and speed based on new stage
 
     def __str__(self):
-        return f"Ball {self.id}: x={self.x}, y={self.y}, vx={self.vx}, vy={self.vy}, stage={self.stage}, color={self.color}"
+        return f"Ball {self.id}: x={self.x}, y={self.y}, vx={self.vx}, \
+            vy={self.vy}, stage={self.stage}, color={self.color}"
 

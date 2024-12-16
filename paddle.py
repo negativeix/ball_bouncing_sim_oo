@@ -10,14 +10,13 @@ class Paddle:
         self.my_turtle.setheading(0)
         self.my_turtle.hideturtle()
 
-
     def set_location(self, location):
         self.location = location
         self.my_turtle.goto(self.location[0], self.location[1])
 
     def draw(self):
         margin = 2.5
-        border_color = (0,0,0)
+        border_color = (0, 0, 0)
         self.my_turtle.color(border_color)
         self.my_turtle.penup()
         self.my_turtle.goto(self.location[0] - self.width / 2,
@@ -59,6 +58,7 @@ class Paddle:
     def restore_white(self):
         self.color = (255, 255, 255)
         self.draw()
+
     def clear(self):
         self.my_turtle.clear()
 
